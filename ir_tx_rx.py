@@ -5,10 +5,10 @@ import traceback
 
 
 def rx_ir(pin: str) -> int:
-    # 入力開始前に宣言済ませる
     num1s: int = 0  # 1秒カウント用
     command: list[tuple[int, int]] = []  # パルスと発生タイミング
-    previousInputValue: int = 1  # 前回のpin状態
+    previousInputValue: int = 0  # 前回のpin状態
+    
     # 初期読み出し
     inputValue: int = GPIO.input(pin)
     # 入力待ち
@@ -16,6 +16,7 @@ def rx_ir(pin: str) -> int:
         inputValue = GPIO.input(pin)
     # 開始時刻取得
     startTime: float = time.perf_counter()
+
     while True:
         if inputValue != previousInputValue:  # Waits until change in state occurs
             now: float = time.perf_counter()
@@ -26,9 +27,9 @@ def rx_ir(pin: str) -> int:
 
         # 1秒間入力されたままなら中断
         if inputValue:
-            num1s = 0
-        else:
             num1s += 1
+        else:
+            num1s = 0
         if num1s > 10000:
             break
 
@@ -40,7 +41,7 @@ def rx_ir(pin: str) -> int:
     binary = 0b1
     #Covers data to binary
     for (type, tm) in command:
-        if type == 0:  # ON
+        if type == 1:  # ON
             binary = binary << 1
             # NECプロトコルによると、1687.5マイクロ秒のギャップは論理的な1を表すため、
             # 1000を超えると十分に大きな区別ができます。
